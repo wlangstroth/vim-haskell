@@ -3,83 +3,105 @@
 " Author:       motemen <motemen@gmail.com>
 " Version:      0.1
 " Last Change:  2007-07-25
-"
-" Modify g:haskell_indent_if and g:haskell_indent_case to
-" change indentation for `if'(default 3) and `case'(default 5).
-" Example (in .vimrc):
-" > let g:haskell_indent_if = 2
 
 if exists('b:did_indent')
-    finish
+  finish
 endif
-
 let b:did_indent = 1
 
-if !exists('g:haskell_indent_if')
-    " if bool
-    " >>>then ...
-    " >>>else ...
-    let g:haskell_indent_if = 2
-endif
-
-if !exists('g:haskell_indent_case')
-    " case xs of
-    " >>>>>[] -> ...
-    " >>>>>(y:ys) -> ...
-    let g:haskell_indent_case = 2
-endif
-
 setlocal indentexpr=GetHaskellIndent()
-setlocal indentkeys=!^F,o,O
+setlocal indentkeys=!^F,o,O,0<Bar>,0=where,0=in
+
+let b:undo_indent = 'setlocal 
+      \ autoindent<
+      \ expandtab<
+      \ indentexpr<
+      \ indentkeys<
+      \ shiftwidth<
+      \ tabstop<
+      \'
 
 function! GetHaskellIndent()
-    let line = substitute(getline(getpos('.')[1] - 1), '\t', repeat(' ', &tabstop), 'g')
+  let currline = getline(v:lnum)
+  let prevline = getline(v:lnum - 1)
+  let previndt = indent(v:lnum - 1)
 
-    if line =~ '[!#$%&*+./<=>?@\\^|~-]$\|\<do$'
-        return match(line, '\s*where \zs\|\S') + &shiftwidth
+  if prevline =~ '\([!#$%&*+\./<=>?@\\^|~-]\|\<do\|{\)\s*\(--.*\)\?$'
+    let idx = match(prevline, '\<where\s\+\zs\S')
+    return (idx > 0 ? idx : previndt) + &shiftwidth
+  endif
+
+  if prevline =~ '^\(instance\|class\)\>.*\&.*\<where\s*\(--.*\)\?$'
+    return &shiftwidth
+  endif
+
+  if prevline =~ ')\s*\(--.*\)\?$'
+    let pos = getpos('.')
+    normal k$
+    let paren_end = getpos('.')
+    normal %
+    let paren_bgn = getpos('.')
+    call cursor(pos)
+    if paren_bgn[1] != paren_end[1]
+      return paren_bgn[2] - 1
     endif
+  endif
 
-    if line =~ '{$'
-        return match(line, '\s*where \zs\|\S') + &shiftwidth
+  let idx = match(prevline, '\<if\>\(.*\&.*\zs\<then\>\|\s\+\zs\S\)')
+  if idx > 0 && prevline !~ '\<else\>'
+    return idx
+  endif
+
+  if prevline =~ '\<\(case\|let\|where\)\s*\(--.*\)\?$'
+    return previndt + &shiftwidth
+  endif
+
+  let idx = match(prevline, '\<do\s\+\zs[^{]\|\<\(case\>.*\&.*\<of\|where\)\s\+\zs\S')
+  if idx > 0
+    return idx
+  endif
+
+  if prevline =~ '\s|\s'
+    let lnum = v:lnum - 1
+    while getline(lnum - 1) =~ '\s|\s'
+      let lnum -= 1 
+    endwhile
+    return indent(lnum) + &shiftwidth
+  endif
+
+  if currline =~ '^\s*in\>'
+    let pos = searchpos('\<let\>', 'bnW')
+    if pos[1] > 0
+      return pos[1] - 1
     endif
+  endif
 
-    if line =~ '^\(instance\|class\).*\&.*where$'
-        return &shiftwidth
-    endif
+  let idx = match(prevline, '\<let\s\+\zs\S')
+  if idx > 0
+    return prevline =~ '\<in\>' ? previndt : idx
+  endif
 
-    if line =~ ')$'
-        let pos = getpos('.')
-        normal k$
-        let paren_end   = getpos('.')
-        normal %
-        let paren_begin = getpos('.')
-        call setpos('.', pos)
-        if paren_begin[1] != paren_end[1]
-            return paren_begin[2] - 1
-        endif
-    endif
+  let idx = match(prevline, '\<case\s\+\zs\S')
+  if idx > 0
+    return idx
+  endif
 
-    if line !~ '\<else\>'
-        let s = match(line, '\<if\>.*\&.*\zs\<then\>')
-        if s > 0
-            return s
-        endif
+  if currline =~ '^\s*|'
+    let idx = match(prevline, '\s\zs|\s')
+    return idx > 0 ? idx : previndt + &shiftwidth
+  endif
 
-        let s = match(line, '\<if\>')
-        if s > 0
-            return s + g:haskell_indent_if
-        endif
-    endif
+  if prevline =~ '\s|\s'
+    let lnum = v:lnum - 1
+    while getline(lnum - 1) =~ '\s|\s'
+      let lnum -= 1 
+    endwhile
+    return indent(lnum) + &shiftwidth
+  endif
 
-    let s = match(line, '\<do\s\+\zs[^{]\|\<where\s\+\zs\w\|\<let\s\+\zs\S\|^\s*\zs|\s')
-    if s > 0
-        return s
-    endif
+  if currline =~ '^\s*where\>' && previndt == 0
+    return &shiftwidth
+  endif
 
-    let s = match(line, '\<case\>')
-    if s > 0
-        return s + g:haskell_indent_case
-    endif
-
-    return match(line, '\S')
+  return previndt
 endfunction
