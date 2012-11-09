@@ -26,16 +26,16 @@ function! GetHaskellIndent()
   let prevline = getline(v:lnum - 1)
   let previndt = indent(v:lnum - 1)
 
-  if prevline =~ '\([!#$%&*+\./<=>?@\\^|~-]\|\<do\|{\)\s*\(--.*\)\?$'
+  if prevline =~ '\%([!#$%&*+\./<=>?@\\^|~-]\|\<do\|{\)\s*\%(--.*\)\?$'
     let idx = match(prevline, '\<where\s\+\zs\S')
     return (idx > 0 ? idx : previndt) + &shiftwidth
   endif
 
-  if prevline =~ '^\(instance\|class\)\>.*\&.*\<where\s*\(--.*\)\?$'
+  if prevline =~ '^\%(instance\|class\)\>.*\&.*\<where\s*\%(--.*\)\?$'
     return &shiftwidth
   endif
 
-  if prevline =~ ')\s*\(--.*\)\?$'
+  if prevline =~ ')\s*\%(--.*\)\?$'
     let pos = getpos('.')
     normal k$
     let paren_end = getpos('.')
@@ -47,18 +47,23 @@ function! GetHaskellIndent()
     endif
   endif
 
-  let idx = match(prevline, '\<if\>\(.*\&.*\zs\<then\>\|\s\+\zs\S\)')
+  let idx = match(prevline, '\<if\>\%(.*\&.*\zs\<then\>\|\s\+\zs\S\)')
   if idx > 0 && prevline !~ '\<else\>'
     return idx
   endif
 
-  if prevline =~ '\<\(case\|let\|where\)\s*\(--.*\)\?$'
+  if prevline =~ '\<\%(case\|let\|where\)\s*\%(--.*\)\?$'
     return previndt + &shiftwidth
   endif
 
-  let idx = match(prevline, '\<do\s\+\zs[^{]\|\<\(case\>.*\&.*\<of\|where\)\s\+\zs\S')
+  let idx = match(prevline, '\<do\s\+\zs[^{]\|\<\%(case\>.*\&.*\<of\|where\)\s\+\zs\S')
   if idx > 0
     return idx
+  endif
+
+  if currline =~ '^\s*|'
+    let idx = match(prevline, '\s\zs|\s')
+    return idx > 0 ? idx : previndt + &shiftwidth
   endif
 
   if prevline =~ '\s|\s'
@@ -66,7 +71,7 @@ function! GetHaskellIndent()
     while getline(lnum - 1) =~ '\s|\s'
       let lnum -= 1 
     endwhile
-    return indent(lnum) + &shiftwidth
+    return indent(lnum - (getline(lnum) =~ '^\s*|')) + &shiftwidth
   endif
 
   if currline =~ '^\s*in\>'
@@ -84,19 +89,6 @@ function! GetHaskellIndent()
   let idx = match(prevline, '\<case\s\+\zs\S')
   if idx > 0
     return idx
-  endif
-
-  if currline =~ '^\s*|'
-    let idx = match(prevline, '\s\zs|\s')
-    return idx > 0 ? idx : previndt + &shiftwidth
-  endif
-
-  if prevline =~ '\s|\s'
-    let lnum = v:lnum - 1
-    while getline(lnum - 1) =~ '\s|\s'
-      let lnum -= 1 
-    endwhile
-    return indent(lnum) + &shiftwidth
   endif
 
   if currline =~ '^\s*where\>' && previndt == 0
