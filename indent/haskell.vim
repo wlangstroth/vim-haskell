@@ -10,7 +10,7 @@ endif
 let b:did_indent = 1
 
 setlocal indentexpr=GetHaskellIndent()
-setlocal indentkeys=!^F,o,O,0<Bar>,0=where,0=in
+setlocal indentkeys=!^F,o,O,0<Bar>,0=where,0=else,0=in
 
 let b:undo_indent = 'setlocal 
       \ autoindent<
@@ -23,6 +23,7 @@ let b:undo_indent = 'setlocal
 
 function! GetHaskellIndent()
   let currline = getline(v:lnum)
+  let currindt = indent(v:lnum)
   let prevline = getline(v:lnum - 1)
   let previndt = indent(v:lnum - 1)
 
@@ -47,9 +48,16 @@ function! GetHaskellIndent()
     endif
   endif
 
-  let idx = match(prevline, '\<if\>\%(.*\&.*\zs\<then\>\|\s\+\zs\S\)')
-  if idx > 0 && prevline !~ '\<else\>'
-    return idx
+  let idx = match(prevline, '\<if\>')
+  if idx > 0 && prevline !~ '\<then\>'
+    return idx + &shiftwidth
+  endif
+
+  if currline =~ '^\s*else\>'
+    let pos = searchpos('\<then\>', 'bnW')
+    if pos[1] > 0
+      return pos[1] - 1
+    endif
   endif
 
   if prevline =~ '\<\%(case\|let\|where\)\s*\%(--.*\)\?$'
@@ -81,11 +89,6 @@ function! GetHaskellIndent()
     endif
   endif
 
-  let idx = match(prevline, '\<let\s\+\zs\S')
-  if idx > 0
-    return prevline =~ '\<in\>' ? previndt : idx
-  endif
-
   let idx = match(prevline, '\<case\s\+\zs\S')
   if idx > 0
     return idx
@@ -95,5 +98,5 @@ function! GetHaskellIndent()
     return &shiftwidth
   endif
 
-  return previndt
+  return currindt == 0 ? previndt : -1
 endfunction
