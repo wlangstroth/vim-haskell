@@ -12,7 +12,7 @@ let b:did_indent = 1
 setlocal indentexpr=GetHaskellIndent()
 setlocal indentkeys=!^F,o,O,0<Bar>,0),0],0},0=where,0=else,0=in
 
-let b:undo_indent = 'setlocal 
+let b:undo_indent = 'setlocal
       \ autoindent<
       \ expandtab<
       \ indentexpr<
@@ -58,8 +58,18 @@ function! GetHaskellIndent()
     return previndt + &shiftwidth
   endif
 
-  let idx = match(prevline,
-        \ '[(\[{]\|\<\%(do\|case\>\&.*\<of\|let\|where\)\s\+\zs.')
+  let idx = match(prevline, '[(\[{]')
+  if idx > 0
+    let pos = getpos('.')
+    call cursor(v:lnum - 1, idx + 1)
+    normal %
+    if line('.') != v:lnum - 1 || col('.') == idx + 1
+      return idx
+    endif
+    call cursor(pos)
+  endif
+
+  let idx = match(prevline, '\<\%(do\|case\>\&.*\<of\|let\|where\)\s\+\zs.')
   if idx > 0
     return idx
   endif
@@ -82,7 +92,7 @@ function! GetHaskellIndent()
   if prevline =~ '\s|\s'
     let lnum = v:lnum - 1
     while getline(lnum - 1) =~ '\s|\s'
-      let lnum -= 1 
+      let lnum -= 1
     endwhile
     return indent(lnum - (getline(lnum) =~ '^\s*|')) + &shiftwidth
   endif
