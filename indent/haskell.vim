@@ -10,7 +10,7 @@ endif
 let b:did_indent = 1
 
 setlocal indentexpr=GetHaskellIndent()
-setlocal indentkeys=!^F,o,O,0<Bar>,0=where,0=else,0=in
+setlocal indentkeys=!^F,o,O,0<Bar>,0),0],0},0=where,0=else,0=in
 
 let b:undo_indent = 'setlocal 
       \ autoindent<
@@ -21,31 +21,24 @@ let b:undo_indent = 'setlocal
       \ tabstop<
       \'
 
+let s:comment_patt = '\s*\%(--.*\)\?$'
+
 function! GetHaskellIndent()
   let currline = getline(v:lnum)
   let currindt = indent(v:lnum)
   let prevline = getline(v:lnum - 1)
   let previndt = indent(v:lnum - 1)
 
-  if prevline =~ '\%([!#$%&*+\./<=>?@\\^|~-]\|\<do\|{\)\s*\%(--.*\)\?$'
-    let idx = match(prevline, '\<where\s\+\zs\S')
-    return (idx > 0 ? idx : previndt) + &shiftwidth
-  endif
-
-  if prevline =~ '^\%(instance\|class\)\>.*\&.*\<where\s*\%(--.*\)\?$'
-    return &shiftwidth
-  endif
-
-  if prevline =~ ')\s*\%(--.*\)\?$'
+  let idx = match(prevline, '[)\]}]'.s:comment_patt)
+  if idx > 0
     let pos = getpos('.')
-    normal k$
-    let paren_end = getpos('.')
+    call cursor(v:lnum - 1, idx + 1)
     normal %
-    let paren_bgn = getpos('.')
-    call cursor(pos)
-    if paren_bgn[1] != paren_end[1]
-      return paren_bgn[2] - 1
+    if line('.') != v:lnum - 1
+      let idx = col('.') - 1
+      return idx < previndt ? idx : -1
     endif
+    call cursor(pos)
   endif
 
   let idx = match(prevline, '\<if\>')
@@ -54,19 +47,31 @@ function! GetHaskellIndent()
   endif
 
   if currline =~ '^\s*else\>'
-    let pos = searchpos('\<then\>', 'bnW')
-    if pos[1] > 0
-      return pos[1] - 1
+    let [lnum, idx] = searchpos('\<then\>', 'bnW')
+    if idx > 0
+      return idx - 1
     endif
   endif
 
-  if prevline =~ '\<\%(case\|let\|where\)\s*\%(--.*\)\?$'
+  if prevline =~ '\<\%(do\|case\>\&.*\<of\|let\|where\)'.s:comment_patt
+        \ || prevline =~ '[!#$%&(*+\./<=>?@\[\\^{|~-]'.s:comment_patt
     return previndt + &shiftwidth
   endif
 
-  let idx = match(prevline, '\<do\s\+\zs[^{]\|\<\%(case\>.*\&.*\<of\|where\)\s\+\zs\S')
+  let idx = match(prevline,
+        \ '[(\[{]\|\<\%(do\|case\>\&.*\<of\|let\|where\)\s\+\zs.')
   if idx > 0
     return idx
+  endif
+
+  if currline =~ '^\s*[)\]}]'
+    let pos = getpos('.')
+    normal 0%
+    if line('.') != v:lnum
+      let idx = col('.') - 1
+      return getline('.')[idx :] =~ '^.'.s:comment_patt ? indent('.') : idx
+    endif
+    call cursor(pos)
   endif
 
   if currline =~ '^\s*|'
@@ -83,20 +88,15 @@ function! GetHaskellIndent()
   endif
 
   if currline =~ '^\s*in\>'
-    let pos = searchpos('\<let\>', 'bnW')
-    if pos[1] > 0
-      return pos[1] - 1
+    let [lnum, idx] = searchpos('\<let\>', 'bnW')
+    if idx > 0
+      return idx - 1
     endif
-  endif
-
-  let idx = match(prevline, '\<case\s\+\zs\S')
-  if idx > 0
-    return idx
   endif
 
   if currline =~ '^\s*where\>' && previndt == 0
     return &shiftwidth
   endif
 
-  return currindt == 0 ? previndt : -1
+  return previndt > currindt ? -1 : previndt
 endfunction
