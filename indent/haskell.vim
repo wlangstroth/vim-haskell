@@ -2,7 +2,7 @@
 " Language:     Haskell
 " Author:       motemen <motemen@gmail.com>
 " Version:      0.1
-" Last Change:  2007-07-25
+" Last Change:  2012-11-19
 
 if exists('b:did_indent')
   finish
@@ -53,7 +53,7 @@ function! GetHaskellIndent()
     endif
   endif
 
-  if prevline =~ '\<\%(do\|case\>\&.*\<of\|let\|where\)'.s:comment_patt
+  if prevline =~ '\<\%(case\>\&.*\<of\|do\|let\|where\)'.s:comment_patt
         \ || prevline =~ '[!#$%&(*+\./<=>?@\[\\^{|~-]'.s:comment_patt
     return previndt + &shiftwidth
   endif
@@ -69,11 +69,6 @@ function! GetHaskellIndent()
     call cursor(pos)
   endif
 
-  let idx = match(prevline, '\<\%(do\|case\>\&.*\<of\|let\|where\)\s\+\zs.')
-  if idx > 0
-    return idx
-  endif
-
   if currline =~ '^\s*[)\]}]'
     let pos = getpos('.')
     normal 0%
@@ -85,7 +80,7 @@ function! GetHaskellIndent()
   endif
 
   if currline =~ '^\s*|'
-    let idx = match(prevline, '\s\zs|\s')
+    let idx = matchend(prevline, '\s\ze|\s')
     return idx > 0 ? idx : previndt + &shiftwidth
   endif
 
@@ -102,6 +97,12 @@ function! GetHaskellIndent()
     if idx > 0
       return idx - 1
     endif
+  endif
+
+  let idx = matchend(prevline,
+        \ '\<\%(case\>\&.*\<of\|do\|let\|where\)\s\+\ze.')
+  if idx > 0
+    return (currline =~ '^\s*$' || currindt > idx) ? idx : currindt
   endif
 
   if currline =~ '^\s*where\>' && previndt == 0
