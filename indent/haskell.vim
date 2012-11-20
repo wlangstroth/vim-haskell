@@ -74,12 +74,13 @@ function! GetHaskellIndent()
     normal 0%
     if line('.') != v:lnum
       let idx = col('.') - 1
-      return getline('.')[idx :] =~ '^.'.s:comment_patt ? indent('.') : idx
+      let ss = getline('.')[idx :] 
+      return ss =~ '^.'.s:comment_patt ? indent('.') : idx
     endif
     call cursor(pos)
   endif
 
-  if currline =~ '^\s*|'
+  if currline =~ '^\s*|' && previndt <= currindt
     let idx = matchend(prevline, '\s\ze|\s')
     return idx > 0 ? idx : previndt + &shiftwidth
   endif
@@ -95,14 +96,16 @@ function! GetHaskellIndent()
   if currline =~ '^\s*in\>'
     let [lnum, idx] = searchpos('\<let\>', 'bnW')
     if idx > 0
-      return idx - 1
+      let idx -= 1
+      let ss = getline(lnum)[idx :]
+      return ss =~ '^let'.s:comment_patt ? previndt : idx
     endif
   endif
 
   let idx = matchend(prevline,
         \ '\<\%(case\>\&.*\<of\|do\|let\|where\)\s\+\ze.')
   if idx > 0
-    return (currline =~ '^\s*$' || currindt > idx) ? idx : currindt
+    return (currline =~ '^\s*$' || currindt > idx) ? idx : -1
   endif
 
   if currline =~ '^\s*where\>' && previndt == 0
