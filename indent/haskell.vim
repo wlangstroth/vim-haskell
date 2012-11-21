@@ -29,6 +29,17 @@ function! GetHaskellIndent()
   let prevline = getline(v:lnum - 1)
   let previndt = indent(v:lnum - 1)
 
+  if currline =~ '^\s*[)\]}]'
+    let pos = getpos('.')
+    normal 0%
+    if line('.') != v:lnum
+      let idx = col('.') - 1
+      let ss = getline('.')[idx :] 
+      return ss =~ '^.'.s:comment_patt ? indent('.') : idx
+    endif
+    call cursor(pos)
+  endif
+
   let idx = match(prevline, '[)\]}]'.s:comment_patt)
   if idx > 0
     let pos = getpos('.')
@@ -65,17 +76,6 @@ function! GetHaskellIndent()
     normal %
     if line('.') != v:lnum - 1 || col('.') == idx + 1
       return idx
-    endif
-    call cursor(pos)
-  endif
-
-  if currline =~ '^\s*[)\]}]'
-    let pos = getpos('.')
-    normal 0%
-    if line('.') != v:lnum
-      let idx = col('.') - 1
-      let ss = getline('.')[idx :] 
-      return ss =~ '^.'.s:comment_patt ? indent('.') : idx
     endif
     call cursor(pos)
   endif
