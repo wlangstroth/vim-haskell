@@ -116,10 +116,7 @@ function! GetHaskellIndent()
     return &shiftwidth
   endif
 
-  if quasidx > 0
-    return quasidx
-  else
-    return previndt > currindt ? -1 : previndt
-  endif
+  return quasidx > 0 ? quasidx
+        \ : ((blankln || currindt > previndt) ? previndt : -1)
 
 endfunction
