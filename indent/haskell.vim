@@ -31,14 +31,7 @@ function! GetHaskellIndent()
     return searchpos('^\s*\zs{-', 'bnW')[1]
   endif
 
-  let prevlnum = v:lnum - 1
-  let prevline = getline(prevlnum)
-  let previndt = indent(prevlnum)
-  let currindt = indent(v:lnum)
   let currpos  = getpos('.')
-  let blankln  = currline !~ '\S'
-  let quasidx  = 0
-
   if currline =~ '^\s*[)\]}]'
     normal 0%
     if line('.') != v:lnum
@@ -49,8 +42,15 @@ function! GetHaskellIndent()
     call cursor(currpos)
   endif
 
+  let prevlnum = v:lnum - 1
+  let prevline = getline(prevlnum)
+  let previndt = indent(prevlnum)
+  let currindt = indent(v:lnum)
+  let blankln  = currline !~ '\S'
+  let quasidx  = 0
+
   if prevline =~ '\<\%(case\>\&.*\<of\|do\|let\|where\)'.s:comment_expr
-        \ || prevline =~ '[!#$%&(*+\./<=>?@\[\\^{|~-]'.s:comment_expr
+        \ || prevline =~ '[!#$%&(*+\./<=>?@\[\\^{|~]\|-\s'.s:comment_expr
     return previndt + &shiftwidth
   endif
 
