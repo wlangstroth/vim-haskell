@@ -1,8 +1,7 @@
 " Vim indent file
 " Language:     Haskell
 " Author:       motemen <motemen@gmail.com>
-" Version:      0.1
-" Last Change:  2012-11-19
+" Last Change:  2012-12-14
 
 if exists('b:did_indent')
   finish
@@ -11,6 +10,7 @@ let b:did_indent = 1
 
 setlocal indentexpr=GetHaskellIndent()
 setlocal indentkeys=!^F,o,O,0<Bar>,0),0],0},0=where,0=else,0=in
+setlocal expandtab shiftwidth=4 tabstop=8
 
 let b:undo_indent = 'setlocal
       \ autoindent<
@@ -21,30 +21,36 @@ let b:undo_indent = 'setlocal
       \ tabstop<
       \'
 
-let s:comment_patt = '\s*\%(--.*\)\?$'
+let s:comment_expr = '\s*\%(--.*\)\?$'
 
 function! GetHaskellIndent()
-  let currpos  = getpos('.')
+  if v:lnum <= 1 | return 0 | endif
+
   let currline = getline(v:lnum)
-  let currindt = indent(v:lnum)
+  if currline =~ '^\s*-\s'
+    return searchpos('^\s*\zs{-', 'bnW')[1]
+  endif
+
   let prevlnum = v:lnum - 1
   let prevline = getline(prevlnum)
   let previndt = indent(prevlnum)
-  let blankln  = currline =~ '^\s*$'
+  let currindt = indent(v:lnum)
+  let currpos  = getpos('.')
+  let blankln  = currline !~ '\S'
   let quasidx  = 0
 
   if currline =~ '^\s*[)\]}]'
     normal 0%
     if line('.') != v:lnum
       let idx = col('.') - 1
-      return match(getline('.'), '^.'.s:comment_patt, idx) >= 0
+      return match(getline('.'), '^.'.s:comment_expr, idx) >= 0
             \ ? indent('.') : idx
     endif
     call cursor(currpos)
   endif
 
-  if prevline =~ '\<\%(case\>\&.*\<of\|do\|let\|where\)'.s:comment_patt
-        \ || prevline =~ '[!#$%&(*+\./<=>?@\[\\^{|~-]'.s:comment_patt
+  if prevline =~ '\<\%(case\>\&.*\<of\|do\|let\|where\)'.s:comment_expr
+        \ || prevline =~ '[!#$%&(*+\./<=>?@\[\\^{|~-]'.s:comment_expr
     return previndt + &shiftwidth
   endif
 
@@ -65,7 +71,7 @@ function! GetHaskellIndent()
   endif
 
   if quasidx == 0
-    let idx = match(prevline, '[)\]}]'.s:comment_patt)
+    let idx = match(prevline, '[)\]}]'.s:comment_expr)
     if idx > 0
       call cursor(prevlnum, idx + 1)
       normal %
@@ -101,7 +107,7 @@ function! GetHaskellIndent()
     let [lnum, idx] = searchpos('\<let\>', 'bnW')
     if idx > 0
       let idx -= 1
-      return match(getline(lnum), '^let'.s:comment_patt, idx) >= 0
+      return match(getline(lnum), '^let'.s:comment_expr, idx) >= 0
             \ ? previndt : idx
     endif
   endif
