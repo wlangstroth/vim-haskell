@@ -49,14 +49,14 @@ elseif exists("b:current_syntax")
 endif
 
 "syntax sync fromstart "mmhhhh.... is this really ok to do so?
-syntax sync linebreaks=15 minlines=50 maxlines=500
+syn sync linebreaks=15 minlines=50 maxlines=500
 
 syn match  hsSpecialChar    contained "\\\([0-9]\+\|o[0-7]\+\|x[0-9a-fA-F]\+\|[\"\\'&\\abfnrtv]\|^[A-Z^_\[\\\]]\)"
 syn match  hsSpecialChar    contained "\\\(NUL\|SOH\|STX\|ETX\|EOT\|ENQ\|ACK\|BEL\|BS\|HT\|LF\|VT\|FF\|CR\|SO\|SI\|DLE\|DC1\|DC2\|DC3\|DC4\|NAK\|SYN\|ETB\|CAN\|EM\|SUB\|ESC\|FS\|GS\|RS\|US\|SP\|DEL\)"
 syn match  hsSpecialCharError   contained "\\&\|'''\+"
-sy region  hsString     start=+"+  skip=+\\\\\|\\"+  end=+"+  contains=hsSpecialChar,@Spell
-sy match   hsCharacter      "[^a-zA-Z0-9_']'\([^\\]\|\\[^']\+\|\\'\)'"lc=1 contains=hsSpecialChar,hsSpecialCharError
-sy match   hsCharacter      "^'\([^\\]\|\\[^']\+\|\\'\)'" contains=hsSpecialChar,hsSpecialCharError
+syn region hsString     start=+"+  skip=+\\\\\|\\"+  end=+"+  contains=hsSpecialChar,@Spell
+syn match  hsCharacter      "[^a-zA-Z0-9_']'\([^\\]\|\\[^']\+\|\\'\)'"lc=1 contains=hsSpecialChar,hsSpecialCharError
+syn match  hsCharacter      "^'\([^\\]\|\\[^']\+\|\\'\)'" contains=hsSpecialChar,hsSpecialCharError
 
 " (Qualified) identifiers (no default highlighting)
 syn match ConId "\(\<[A-Z][a-zA-Z0-9_']*\.\)\=\<[A-Z][a-zA-Z0-9_']*\>"
@@ -71,52 +71,51 @@ syn match hsVarSym "`\(\<[A-Z][a-zA-Z0-9_']*\.\)\=[a-z][a-zA-Z0-9_']*`"
 syn match hsConSym "`\(\<[A-Z][a-zA-Z0-9_']*\.\)\=[A-Z][a-zA-Z0-9_']*`"
 
 " Toplevel Template Haskell support
-"sy match hsTHTopLevel "^[a-z]\(\(.\&[^=]\)\|\(\n[^a-zA-Z0-9]\)\)*"
-sy match hsTHIDTopLevel "^[a-z]\S*"
-sy match hsTHTopLevel "^\$(\?" nextgroup=hsTHTopLevelName
-sy match hsTHTopLevelName "[a-z]\S*" contained
+"syn match hsTHTopLevel "^[a-z]\(\(.\&[^=]\)\|\(\n[^a-zA-Z0-9]\)\)*"
+syn match hsTHIDTopLevel "^[a-z]\S*"
+syn match hsTHTopLevel "^\$(\?" nextgroup=hsTHTopLevelName
+syn match hsTHTopLevelName "[a-z]\S*" contained
 
 " Reserved symbols--cannot be overloaded.
 syn match hsDelimiter  "(\|)\|\[\|\]\|,\|;\|_\|{\|}"
 
-sy region hsInnerParen start="(" end=")" contained contains=hsInnerParen,hsConSym,hsType,hsVarSym
-sy region hs_InfixOpFunctionName start="^(" end=")\s*[^:`]\(\W\&\S\&[^'\"`()[\]{}@]\)\+"re=s
-    \ contained keepend contains=hsInnerParen,hs_HlInfixOp
+syn region hsInnerParen start="(" end=")" contained contains=hsInnerParen,hsConSym,hsType,hsVarSym
+syn region hsInfixOpFunctionName start="^(" end=")\s*[^:`]\(\W\&\S\&[^'\"`()[\]{}@]\)\+"re=s
+      \ contained keepend contains=hsInnerParen,hsHlInfixOp
 
-sy match hs_hlFunctionName "[a-z_]\(\S\&[^,\(\)\[\]]\)*" contained 
-sy match hs_FunctionName "^[a-z_]\(\S\&[^,\(\)\[\]]\)*" contained contains=hs_hlFunctionName
-sy match hs_HighliteInfixFunctionName "`[a-z_][^`]*`" contained
-sy match hs_InfixFunctionName "^\S[^=]*`[a-z_][^`]*`"me=e-1 contained contains=hs_HighliteInfixFunctionName,hsType,hsConSym,hsVarSym,hsString,hsCharacter
-sy match hs_HlInfixOp "\(\W\&\S\&[^`(){}'[\]]\)\+" contained contains=hsString
-sy match hs_InfixOpFunctionName "^\(\(\w\|[[\]{}]\)\+\|\(\".*\"\)\|\('.*'\)\)\s*[^:]=*\(\W\&\S\&[^='\"`()[\]{}@]\)\+"
-    \ contained contains=hs_HlInfixOp,hsCharacter
+syn match hsHlFunctionName "[a-z_]\(\S\&[^,\(\)\[\]]\)*" contained 
+syn match hsFunctionName "^[a-z_]\(\S\&[^,\(\)\[\]]\)*" contained contains=hsHlFunctionName
+syn match hsHlInfixFunctionName "`[a-z_][^`]*`" contained
+syn match hsInfixFunctionName "^\S[^=]*`[a-z_][^`]*`"me=e-1 contained contains=hsHlInfixFunctionName,hsType,hsConSym,hsVarSym,hsString,hsCharacter
+syn match hsHlInfixOp "\(\W\&\S\&[^`(){}'[\]]\)\+" contained contains=hsString
+syn match hsInfixOpFunctionName "^\(\(\w\|[[\]{}]\)\+\|\(\".*\"\)\|\('.*'\)\)\s*[^:]=*\(\W\&\S\&[^='\"`()[\]{}@]\)\+"
+      \ contained contains=hsHlInfixOp,hsCharacter
 
-sy match hs_OpFunctionName        "(\(\W\&[^(),\"]\)\+)" contained
-"sy region hs_Function start="^["'a-z_([{]" end="=\(\s\|\n\|\w\|[([]\)" keepend extend
-sy region hs_Function start="^["'a-zA-Z_([{]\(\(.\&[^=]\)\|\(\n\s\)\)*=" end="\(\s\|\n\|\w\|[([]\)" 
-        \ contains=hs_OpFunctionName,hs_InfixOpFunctionName,hs_InfixFunctionName,hs_FunctionName,hsType,hsConSym,hsVarSym,hsString,hsCharacter
+syn match hsOpFunctionName        "(\(\W\&[^(),\"]\)\+)" contained
+"syn region hsFunction start="^["'a-z_([{]" end="=\(\s\|\n\|\w\|[([]\)" keepend extend
+syn region hsFunction start="^["'a-zA-Z_([{]\(\(.\&[^=]\)\|\(\n\s\)\)*=" end="\(\s\|\n\|\w\|[([]\)" 
+      \ contains=hsOpFunctionName,hsInfixOpFunctionName,hsInfixFunctionName,hsFunctionName,hsType,hsConSym,hsVarSym,hsString,hsCharacter
 
-sy match hs_TypeOp "::"
-sy match hs_DeclareFunction "^[a-z_(]\S*\(\s\|\n\)*::" contains=hs_FunctionName,hs_OpFunctionName,hs_TypeOp
+syn match hsTypeOp "::"
+syn match hsDeclareFunction "^[a-z_(]\S*\(\s\|\n\)*::" contains=hsFunctionName,hsOpFunctionName,hsTypeOp
 
-" hi hs_TypeOp guibg=red
+" hi hsTypeOp guibg=red
+" hi hsInfixOpFunctionName guibg=yellow
+" hi hsFunction guibg=green
+" hi hsInfixFunctionName guibg=red
+" hi hsDeclareFunction guibg=red
 
-" hi hs_InfixOpFunctionName guibg=yellow
-" hi hs_Function guibg=green
-" hi hs_InfixFunctionName guibg=red
-" hi hs_DeclareFunction guibg=red
+syn keyword hsStructure data family class where instance default deriving
+syn keyword hsTypedef type newtype
 
-sy keyword hsStructure data family class where instance default deriving
-sy keyword hsTypedef type newtype
-
-sy keyword hsInfix infix infixl infixr
-sy keyword hsStatement  do case of let in
-sy keyword hsConditional if then else
+syn keyword hsInfix infix infixl infixr
+syn keyword hsStatement  do case of let in
+syn keyword hsConditional if then else
 
 "if exists("hs_highlight_types")
   " Primitive types from the standard prelude and libraries.
-  sy match hsType "\<[A-Z]\(\S\&[^,.]\)*\>"
-  sy match hsType "()"
+  syn match hsType "\<[A-Z]\(\S\&[^,.]\)*\>"
+  syn match hsType "()"
 "endif
 
 " Not real keywords, but close.
@@ -126,108 +125,95 @@ sy keyword hsConditional if then else
 "endif
 
 syn region  hsPackageString start=+L\="+ skip=+\\\\\|\\"\|\\$+ excludenl end=+"+ end='$' contains=cSpecial contained
-sy match   hsModuleName  excludenl "\([A-Z]\w*\.\?\)*" contained
+syn match   hsModuleName  excludenl "\([A-Z]\w*\.\?\)*" contained
 
-sy match hsImport "\<import\>\s\+\(qualified\s\+\)\?\(\<\(\w\|\.\)*\>\)"
-    \ contains=hsModuleName,hsImportLabel
-    \ nextgroup=hsImportParams,hsImportIllegal skipwhite
-sy keyword hsImportLabel import qualified contained
+syn match hsImport "\<import\>\s\+\(qualified\s\+\)\?\(\<\(\w\|\.\)*\>\)"
+      \ contains=hsModuleName,hsImportLabel
+      \ nextgroup=hsImportParams,hsImportIllegal skipwhite
+syn keyword hsImportLabel import qualified contained
 
-sy match hsImportIllegal "\w\+" contained
+syn match hsImportIllegal "\w\+" contained
 
-sy keyword hsAsLabel as contained
-sy keyword hsHidingLabel hiding contained
+syn keyword hsAsLabel as contained
+syn keyword hsHidingLabel hiding contained
 
-sy match hsImportParams "as\s\+\(\w\+\)" contained
-    \ contains=hsModuleName,hsAsLabel
-    \ nextgroup=hsImportParams,hsImportIllegal skipwhite
-sy match hsImportParams "hiding" contained
-    \ contains=hsHidingLabel
-    \ nextgroup=hsImportParams,hsImportIllegal skipwhite
-sy region hsImportParams start="(" end=")" contained
-    \ contains=hsBlockComment,hsLineComment, hsType,hsDelimTypeExport,hs_hlFunctionName,hs_OpFunctionName
-    \ nextgroup=hsImportIllegal skipwhite
+syn match hsImportParams "as\s\+\(\w\+\)" contained
+      \ contains=hsModuleName,hsAsLabel
+      \ nextgroup=hsImportParams,hsImportIllegal skipwhite
+syn match hsImportParams "hiding" contained
+      \ contains=hsHidingLabel
+      \ nextgroup=hsImportParams,hsImportIllegal skipwhite
+syn region hsImportParams start="(" end=")" contained
+      \ contains=hsBlockComment,hsLineComment, hsType,hsDelimTypeExport,hsHlFunctionName,hsOpFunctionName
+      \ nextgroup=hsImportIllegal skipwhite
 
-" hi hsImport guibg=red
+"hi hsImport guibg=red
 "hi hsImportParams guibg=bg
 "hi hsImportIllegal guibg=bg
 "hi hsModuleName guibg=bg
 
-"sy match hsImport      "\<import\>\(.\|[^(]\)*\((.*)\)\?"
-"         \ contains=hsPackageString,hsImportLabel,hsImportMod,hsModuleName,hsImportList
-"sy keyword hsImportLabel import contained
-"sy keyword hsImportMod     as qualified hiding contained
-"sy region hsImportListInner start="(" end=")" contained keepend extend contains=hs_OpFunctionName
-"sy region  hsImportList matchgroup=hsImportListParens start="("rs=s+1 end=")"re=e-1
-"        \ contained
-"        \ keepend extend
-"        \ contains=hsType,hsLineComment,hsBlockComment,hs_hlFunctionName,hsImportListInner
-
-
-
 " new module highlighting
 syn region hsDelimTypeExport start="\<[A-Z]\(\S\&[^,.]\)*\>(" end=")" contained
-   \ contains=hsType
+      \ contains=hsType
 
-sy keyword hsExportModuleLabel module contained
-sy match hsExportModule "\<module\>\(\s\|\t\|\n\)*\([A-Z]\w*\.\?\)*" contained contains=hsExportModuleLabel,hsModuleName
+syn keyword hsExportModuleLabel module contained
+syn match hsExportModule "\<module\>\(\s\|\t\|\n\)*\([A-Z]\w*\.\?\)*" contained contains=hsExportModuleLabel,hsModuleName
 
-sy keyword hsModuleStartLabel module contained
-sy keyword hsModuleWhereLabel where contained
+syn keyword hsModuleStartLabel module contained
+syn keyword hsModuleWhereLabel where contained
 
 syn match hsModuleStart "^module\(\s\|\n\)*\(\<\(\w\|\.\)*\>\)\(\s\|\n\)*"
-  \ contains=hsModuleStartLabel,hsModuleName
-  \ nextgroup=hsModuleCommentA,hsModuleExports,hsModuleWhereLabel
+      \ contains=hsModuleStartLabel,hsModuleName
+      \ nextgroup=hsModuleCommentA,hsModuleExports,hsModuleWhereLabel
 
 syn region hsModuleCommentA start="{-" end="-}"
-  \ contains=hsModuleCommentA,hsCommentTodo,@Spell contained
-  \ nextgroup=hsModuleCommentA,hsModuleExports,hsModuleWhereLabel skipwhite skipnl
+      \ contains=hsModuleCommentA,hsCommentTodo,@Spell contained
+      \ nextgroup=hsModuleCommentA,hsModuleExports,hsModuleWhereLabel skipwhite skipnl
 
 syn match hsModuleCommentA "--.*\n"
-  \ contains=hsCommentTodo,@Spell contained
-  \ nextgroup=hsModuleCommentA,hsModuleExports,hsModuleWhereLabel skipwhite skipnl
+      \ contains=hsCommentTodo,@Spell contained
+      \ nextgroup=hsModuleCommentA,hsModuleExports,hsModuleWhereLabel skipwhite skipnl
 
 syn region hsModuleExports start="(" end=")" contained
-   \ nextgroup=hsModuleCommentB,hsModuleWhereLabel skipwhite skipnl
-   \ contains=hsBlockComment,hsLineComment,hsType,hsDelimTypeExport,hs_hlFunctionName,hs_OpFunctionName,hsExportModule
+      \ nextgroup=hsModuleCommentB,hsModuleWhereLabel skipwhite skipnl
+      \ contains=hsBlockComment,hsLineComment,hsType,hsDelimTypeExport,hsHlFunctionName,hsOpFunctionName,hsExportModule
 
 syn match hsModuleCommentB "--.*\n"
-  \ contains=hsCommentTodo,@Spell contained
-  \ nextgroup=hsModuleCommentB,hsModuleWhereLabel skipwhite skipnl
+      \ contains=hsCommentTodo,@Spell contained
+      \ nextgroup=hsModuleCommentB,hsModuleWhereLabel skipwhite skipnl
 
 syn region hsModuleCommentB start="{-" end="-}"
-   \ contains=hsModuleCommentB,hsCommentTodo,@Spell contained
-   \ nextgroup=hsModuleCommentB,hsModuleWhereLabel skipwhite skipnl
+      \ contains=hsModuleCommentB,hsCommentTodo,@Spell contained
+      \ nextgroup=hsModuleCommentB,hsModuleWhereLabel skipwhite skipnl
 " end module highlighting
 
 " FFI support
-sy keyword hsFFIForeign foreign contained
-"sy keyword hsFFIImportExport import export contained
-sy keyword hsFFIImportExport export contained
-sy keyword hsFFICallConvention ccall stdcall contained
-sy keyword hsFFISafety safe unsafe contained
-sy region  hsFFIString      start=+"+  skip=+\\\\\|\\"+  end=+"+  contained contains=hsSpecialChar
-sy match hsFFI excludenl "\<foreign\>\(.\&[^\"]\)*\"\(.\)*\"\(\s\|\n\)*\(.\)*::"
-  \ keepend
-  \ contains=hsFFIForeign,hsFFIImportExport,hsFFICallConvention,hsFFISafety,hsFFIString,hs_OpFunctionName,hs_hlFunctionName
+syn keyword hsFFIForeign foreign contained
+syn keyword hsFFIImportExport export contained
+syn keyword hsFFICallConvention ccall stdcall contained
+syn keyword hsFFISafety safe unsafe contained
+syn region  hsFFIString      start=+"+  skip=+\\\\\|\\"+  end=+"+  contained contains=hsSpecialChar
+syn match hsFFI excludenl "\<foreign\>\(.\&[^\"]\)*\"\(.\)*\"\(\s\|\n\)*\(.\)*::"
+      \ keepend
+      \ contains=hsFFIForeign,hsFFIImportExport,hsFFICallConvention,hsFFISafety,hsFFIString,hsOpFunctionName,hsHlFunctionName
 
 
-sy match   hsNumber     "\<[0-9]\+\>\|\<0[xX][0-9a-fA-F]\+\>\|\<0[oO][0-7]\+\>"
-sy match   hsFloat      "\<[0-9]\+\.[0-9]\+\([eE][-+]\=[0-9]\+\)\=\>"
+syn match   hsNumber     "\<[0-9]\+\>\|\<0[xX][0-9a-fA-F]\+\>\|\<0[oO][0-7]\+\>"
+syn match   hsFloat      "\<[0-9]\+\.[0-9]\+\([eE][-+]\=[0-9]\+\)\=\>"
 
 " Comments
-sy keyword hsCommentTodo    TODO FIXME XXX TBD contained
-sy match   hsLineComment      "---*\([^-!#$%&\*\+./<=>\?@\\^|~].*\)\?$" contains=hsCommentTodo,@Spell
-sy region  hsBlockComment     start="{-"  end="-}" contains=hsBlockComment,hsCommentTodo,@Spell
-sy region  hsPragma        start="{-#" end="#-}"
+syn keyword hsCommentTodo    TODO FIXME XXX TBD contained
+syn match   hsLineComment      "---*\([^-!#$%&\*\+./<=>\?@\\^|~].*\)\?$" contains=hsCommentTodo,@Spell
+syn region  hsBlockComment     start="{-"  end="-}" contains=hsBlockComment,hsCommentTodo,@Spell
+syn region  hsPragma        start="{-#" end="#-}"
 
 " QuasiQuotation
-sy region hsQQ start="\[\$" end="|\]"me=e-2 keepend contains=hsQQVarID,hsQQContent nextgroup=hsQQEnd
-sy region hsQQNew start="\[\(.\&[^|]\&\S\)*|" end="|\]"me=e-2 keepend contains=hsQQVarIDNew,hsQQContent nextgroup=hsQQEnd
-sy match hsQQContent ".*" contained
-sy match hsQQEnd "|\]" contained
-sy match hsQQVarID "\[\$\(.\&[^|]\)*|" contained
-sy match hsQQVarIDNew "\[\(.\&[^|]\)*|" contained
+syn region hsQQ start="\[\$" end="|\]"me=e-2 keepend contains=hsQQVarID,hsQQContent nextgroup=hsQQEnd
+syn region hsQQNew start="\[\(.\&[^|]\&\S\)*|" end="|\]"me=e-2 keepend contains=hsQQVarIDNew,hsQQContent nextgroup=hsQQEnd
+syn match hsQQContent ".*" contained
+syn match hsQQEnd "|\]" contained
+syn match hsQQVarID "\[\$\(.\&[^|]\)*|" contained
+syn match hsQQVarIDNew "\[\(.\&[^|]\)*|" contained
 
 if exists("hs_highlight_debug")
   " Debugging functions from the standard prelude.
@@ -238,7 +224,7 @@ endif
 " C Preprocessor directives. Shamelessly ripped from c.vim and trimmed
 " First, see whether to flag directive-like lines or not
 if (!exists("hs_allow_hash_operator"))
-    syn match   cError      display "^\s*\(%:\|#\).*$"
+  syn match   cError      display "^\s*\(%:\|#\).*$"
 endif
 " Accept %: for # (C99)
 syn region  cPreCondit  start="^\s*\(%:\|#\)\s*\(if\|ifdef\|ifndef\|elif\)\>" skip="\\$" end="$" end="//"me=s-1 contains=cComment,cCppString,cCommentError
@@ -254,8 +240,8 @@ syn region  cDefine     matchgroup=cPreCondit start="^\s*\(%:\|#\)\s*\(define\|u
 syn region  cPreProc    matchgroup=cPreCondit start="^\s*\(%:\|#\)\s*\(pragma\>\|line\>\|warning\>\|warn\>\|error\>\)" skip="\\$" end="$" keepend
 
 syn region  cComment    matchgroup=cCommentStart start="/\*" end="\*/" contains=cCommentStartError,cSpaceError contained
-syntax match    cCommentError   display "\*/" contained
-syntax match    cCommentStartError display "/\*"me=e-1 contained
+syn match   cCommentError   display "\*/" contained
+syn match   cCommentStartError display "/\*"me=e-1 contained
 syn region  cCppString  start=+L\="+ skip=+\\\\\|\\"\|\\$+ excludenl end=+"+ end='$' contains=cSpecial contained
 
 
@@ -319,16 +305,16 @@ syn match hsFunction    "\<\(readFile\|writeFile\|appendFile\|readIO\|readLn\)\>
 
 if version >= 508 || !exists("did_hs_syntax_inits")
   if version < 508
-    let did_hs_syntax_inits = 1
+    let did_hsSyntax_inits = 1
     command -nargs=+ HiLink hi link <args>
   else
     command -nargs=+ HiLink hi def link <args>
   endif
 
-  HiLink hs_hlFunctionName             Function
-  HiLink hs_HighliteInfixFunctionName  Function
-  HiLink hs_HlInfixOp                  Function
-  HiLink hs_OpFunctionName             Function
+  HiLink hsHlFunctionName              Function
+  HiLink hsHlInfixFunctionName         Function
+  HiLink hsHlInfixOp                   Function
+  HiLink hsOpFunctionName              Function
   HiLink hsTypedef                     Typedef
   HiLink hsVarSym                      hsOperator
   HiLink hsConSym                      hsOperator
@@ -375,13 +361,13 @@ if version >= 508 || !exists("did_hs_syntax_inits")
   HiLink hsBoolean                     Boolean
 
   "if exists("hs_highlight_types")
-      HiLink hsDelimTypeExport         hsType
-      HiLink hsType                    Type
+    HiLink hsDelimTypeExport           hsType
+    HiLink hsType                      Type
   "endif
 
   HiLink hsDebug                       Debug
 
-  HiLink hs_TypeOp                     hsOperator
+  HiLink hsTypeOp                      hsOperator
 
   HiLink cCppString                    hsString
   HiLink cCommentStart                 hsComment
