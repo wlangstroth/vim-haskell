@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:     Haskell
 " Author:       motemen <motemen@gmail.com>
-" Last Change:  2012-12-14
+" Last Change:  2012-12-26
 
 if exists('b:did_indent')
   finish
@@ -42,15 +42,16 @@ function! GetHaskellIndent()
     call cursor(currpos)
   endif
 
-  let prevlnum = v:lnum - 1
-  let prevline = getline(prevlnum)
-  let previndt = indent(prevlnum)
-  let currindt = indent(v:lnum)
   let blankln  = currline !~ '\S'
   let quasidx  = 0
+  let prevlnum = v:lnum - 1
+  let prevline = substitute(getline(prevlnum), s:comment_expr, '', '')
+  let previndt = indent(prevlnum)
+  let currline = substitute(currline, s:comment_expr, '', '')
+  let currindt = indent(v:lnum)
 
-  if prevline =~ '\<\%(case\>\&.*\<of\|do\|let\|where\)'.s:comment_expr
-        \ || prevline =~ '[!#$%&(*+\./<=>?@\[\\^{|~]\|-\s'.s:comment_expr
+  if prevline =~ '\<\%(case\>\&.*\<of\|do\|let\|where\)$'
+        \ || prevline =~ '[!#$%&(*+\./<=>?@\[\\^{|~-]$'
     return previndt + &shiftwidth
   endif
 
@@ -71,7 +72,7 @@ function! GetHaskellIndent()
   endif
 
   if quasidx == 0
-    let idx = match(prevline, '[)\]}]'.s:comment_expr)
+    let idx = match(prevline, '[)\]}]$')
     if idx > 0
       call cursor(prevlnum, idx + 1)
       normal %
