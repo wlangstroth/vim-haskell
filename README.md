@@ -1,6 +1,11 @@
 # vim-haskell
 
-A vim configuration for use with [pathogen](https://github.com/tpope/vim-pathogen).
+A vim configuration for use with one of the following plugins.
+
+* [pathogen](https://github.com/tpope/vim-pathogen)
+* [vundle](https://github.com/gmarik/vundle)
+* [neobundle](https://github.com/Shouge/neobundle.vim)
+* ...
 
 ## Authorship
 
@@ -14,3 +19,13 @@ In addition, the syntax file has the following note:
     of C preprocessor directives, and for pointing out a bug in the
     end-of-line comment handling.
 
+## Configuration
+
+If you want to specify the certain language-extensions whenever you create new .hs file,
+
+```vim
+let g:vim_haskell_language_extensions = [
+	\ 'OverloadedStrings',
+	\ 'TemplateHaskell'
+	\ ]
+```
