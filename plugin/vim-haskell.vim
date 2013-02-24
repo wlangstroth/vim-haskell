@@ -3,7 +3,7 @@
 "
 
 if exists('g:loaded_vim_haskell')
-  finiah
+  finish
 endif
 
 let s:save_cpo = &cpo
