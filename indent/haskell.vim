@@ -85,8 +85,8 @@ function! GetHaskellIndent()
   endif
 
   let idx = match(prevline, '\<if\>', quasidx)
-  if idx > 0 && synID(prevline, idx, 0) == 'hsString'
-      let idx = 0
+  if idx > 0 && synIDattr(synID(prevlnum, idx, 0), 'name') == 'hsString'
+    let idx = 0
   endif
   if idx > 0 && prevline !~ '\<then\>'
     return idx + &shiftwidth
