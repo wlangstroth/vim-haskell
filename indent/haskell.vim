@@ -10,7 +10,9 @@ let b:did_indent = 1
 
 setlocal indentexpr=GetHaskellIndent()
 setlocal indentkeys=!^F,o,O,0<Bar>,0),0],0},0=where,0=else,0=in
-setlocal expandtab shiftwidth=4 tabstop=8
+if !exists('g:haskell_custom_tabs') || g:haskell_custom_tabs == 0
+    setlocal expandtab tabstop=8
+endif
 
 let b:undo_indent = 'setlocal
       \ autoindent<
