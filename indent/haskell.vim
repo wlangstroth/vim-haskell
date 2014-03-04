@@ -93,7 +93,8 @@ function! GetHaskellIndent()
   endif
 
   if currline =~ '^\s*else\>'
-    let [lnum, idx] = searchpos('\<then\>', 'bnW')
+    normal b
+    let [lnum, idx] = searchpairpos('\<then\>', '', '\<else\>', 'bnW')
     if idx > 0 | return idx - 1 | endif
   endif
 
@@ -104,6 +105,10 @@ function! GetHaskellIndent()
 
   if currline =~ '^\s*|' && previndt <= currindt
     let idx = match(prevline, '\s\zs|\s', quasidx)
+    if idx < 0
+      let idx = match(prevline, '^\s*\%(let\|where\)\s\+\zs.\+', quasidx)
+      let idx = idx < 0 ? idx : idx + &shiftwidth
+    endif
     return idx > 0 ? idx : previndt + &shiftwidth
   endif
 
@@ -130,3 +135,4 @@ function! GetHaskellIndent()
         \ : ((blankln || currindt > previndt) ? previndt : -1)
 
 endfunction
+
