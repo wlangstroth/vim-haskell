@@ -106,7 +106,7 @@ syn match hsDeclareFunction "^[a-z_(]\S*\(\s\|\n\)*::" contains=hsFunctionName,h
 " hi hsDeclareFunction guibg=red
 
 syn keyword hsStructure data family class where instance default deriving
-syn keyword hsTypedef type newtype
+syn keyword hsTypedef type newtype pattern
 
 syn keyword hsInfix infix infixl infixr
 syn keyword hsStatement  do case of let in
