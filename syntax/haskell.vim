@@ -83,7 +83,7 @@ syn region hsInnerParen start="(" end=")" contained contains=hsInnerParen,hsConS
 syn region hsInfixOpFunctionName start="^(" end=")\s*[^:`]\(\W\&\S\&[^'\"`()[\]{}@]\)\+"re=s
       \ contained keepend contains=hsInnerParen,hsHlInfixOp
 
-syn match hsHlFunctionName "[a-z_]\(\S\&[^,\(\)\[\]]\)*" contained 
+syn match hsHlFunctionName "[a-z_]\(\S\&[^,\(\)\[\]]\)*" contained
 syn match hsFunctionName "^[a-z_]\(\S\&[^,\(\)\[\]]\)*" contained contains=hsHlFunctionName
 syn match hsHlInfixFunctionName "`[a-z_][^`]*`" contained
 syn match hsInfixFunctionName "^\S[^=]*`[a-z_][^`]*`"me=e-1 contained contains=hsHlInfixFunctionName,hsType,hsConSym,hsVarSym,hsString,hsCharacter
@@ -93,7 +93,7 @@ syn match hsInfixOpFunctionName "^\(\(\w\|[[\]{}]\)\+\|\(\".*\"\)\|\('.*'\)\)\s*
 
 syn match hsOpFunctionName        "(\(\W\&[^(),\"]\)\+)" contained
 "syn region hsFunction start="^["'a-z_([{]" end="=\(\s\|\n\|\w\|[([]\)" keepend extend
-syn region hsFunction start="^["'a-zA-Z_([{]\(\(.\&[^=]\)\|\(\n\s\)\)*=" end="\(\s\|\n\|\w\|[([]\)" 
+syn region hsFunction start="^["'a-zA-Z_([{]\(\(.\&[^=]\)\|\(\n\s\)\)*=" end="\(\s\|\n\|\w\|[([]\)"
       \ contains=hsOpFunctionName,hsInfixOpFunctionName,hsInfixFunctionName,hsFunctionName,hsType,hsConSym,hsVarSym,hsString,hsCharacter
 
 syn match hsTypeOp "::"
@@ -112,17 +112,17 @@ syn keyword hsInfix infix infixl infixr
 syn keyword hsStatement  do case of let in
 syn keyword hsConditional if then else
 
-"if exists("hs_highlight_types")
+if exists("hs_highlight_types")
   " Primitive types from the standard prelude and libraries.
   syn match hsType "\<[A-Z]\(\S\&[^,.]\)*\>"
   syn match hsType "()"
-"endif
+endif
 
 " Not real keywords, but close.
-"if exists("hs_highlight_boolean")
+if exists("hs_highlight_boolean")
   " Boolean constants from the standard prelude.
   "syn keyword hsBoolean True False
-"endif
+endif
 
 syn region  hsPackageString start=+L\="+ skip=+\\\\\|\\"\|\\$+ excludenl end=+"+ end='$' contains=cSpecial contained
 syn match   hsModuleName  excludenl "\([A-Z]\w*\.\?\)*" contained
@@ -360,10 +360,10 @@ if version >= 508 || !exists("did_hs_syntax_inits")
   HiLink hsPragma                      SpecialComment
   HiLink hsBoolean                     Boolean
 
-  "if exists("hs_highlight_types")
+  if exists("hs_highlight_types")
     HiLink hsDelimTypeExport           hsType
     HiLink hsType                      Type
-  "endif
+  endif
 
   HiLink hsDebug                       Debug
 
