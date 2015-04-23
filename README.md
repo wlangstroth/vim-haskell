@@ -4,7 +4,7 @@ A vim configuration for use with one of the following plugins.
 
 * [pathogen](https://github.com/tpope/vim-pathogen)
 * [vundle](https://github.com/gmarik/vundle)
-* [neobundle](https://github.com/Shouge/neobundle.vim)
+* [neobundle](https://github.com/Shougo/neobundle.vim)
 * ...
 
 ## Authorship
